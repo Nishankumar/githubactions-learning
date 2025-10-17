@@ -35,3 +35,9 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+
+      - name: Set APP_VERSION
+        run: echo "APP_VERSION=${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Use APP_VERSION
+        run: echo "Deploying version $APP_VERSION"
