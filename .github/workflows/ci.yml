@@ -50,7 +50,7 @@ jobs:
           github_token: ${{ secrets.TOKEN }}
           release_branches: main
           # custom_tag: v2.0.0
-          default_bump: major
+          # default_bump: major
 
           
       - name: Create a GitHub release
