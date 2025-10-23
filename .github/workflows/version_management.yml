@@ -51,11 +51,11 @@ jobs:
         } >> "$GITHUB_OUTPUT"
 
     
-    # - name: Update GitHub variable
-    #   run: |
-    #     gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}"
-    #   env:
-    #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Update GitHub variable
+      run: |
+        gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}"
+      env:
+        GH_TOKEN: ${{ secrets.TOKEN }}
     
     # - name: Create tag
     #   run: |
