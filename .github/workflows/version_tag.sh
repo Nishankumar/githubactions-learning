@@ -1,6 +1,6 @@
 #!/bin/bash
 
-current_version=${1:-"v1.1.0"}
+current_version=${1:-"v1.0.0"}
 version_type=${2:-"major"}
 
 # Extract version numbers
