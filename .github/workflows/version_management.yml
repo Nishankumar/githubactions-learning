@@ -51,14 +51,13 @@ jobs:
           echo "EOF"
         } >> "$GITHUB_OUTPUT"
 
-    
+        
     - name: Update GitHub variable
       run: |
-        # gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}"
-        gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}" --repo ${{ github.server_url }}/${{ github.repository }}"
-
+        gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}" --repo "${{ github.server_url }}/${{ github.repository }}"
       env:
-        GH_TOKEN: ${{ secrets.TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     
     # - name: Create tag
     #   run: |
