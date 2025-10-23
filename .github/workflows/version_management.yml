@@ -33,6 +33,7 @@ jobs:
           CURRENT_VERSION="v1.0.0"
         fi
         echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "$version"
     
     - name: Calculate new version
       id: newversion
@@ -40,14 +41,15 @@ jobs:
         chmod +x version_tag.sh
         NEW_VERSION=$(./version_tag.sh "${{ steps.current_version.outputs.version }}" "${{ github.event.inputs.version_type || 'patch' }}")
     
-        # Safe multiline output
-        {
-          echo "version<<EOF"
-          echo "$NEW_VERSION"
-          echo "EOF"
-        } >> "$GITHUB_OUTPUT"
-
-        # echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+        # # Safe multiline output
+        # {
+        #   echo "version<<EOF"
+        #   echo "$NEW_VERSION"
+        #   echo "EOF"
+        # } >> "$GITHUB_OUTPUT"
+        
+        echo "newVersion=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "$newVersion"
         
     # - name: Calculate new version
     #   id: new_version
