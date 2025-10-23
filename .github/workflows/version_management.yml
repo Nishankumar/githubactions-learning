@@ -1,0 +1,53 @@
+name: Version Management
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Get current version
+      id: current_version
+      run: |
+        CURRENT_VERSION="${{ vars.APP_VERSION }}"
+        if [ -z "$CURRENT_VERSION" ]; then
+          CURRENT_VERSION="v1.0.0"
+        fi
+        echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+    
+    - name: Calculate new version
+      id: new_version
+      run: |
+        chmod +x workflow/version_tag.sh
+        NEW_VERSION=$(./workflow/version_tag.sh "${{ steps.current_version.outputs.version }}" "${{ github.event.inputs.version_type || 'patch' }}")
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+    
+    - name: Update GitHub variable
+      run: |
+        gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Create tag
+      run: |
+        git tag ${{ steps.new_version.outputs.version }}
+        git push origin ${{ steps.new_version.outputs.version }}
