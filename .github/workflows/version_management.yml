@@ -57,10 +57,9 @@ jobs:
         
     - name: Update GitHub variable
       run: |
-        gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}" --repo "${{ github.repository }}"
+        gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}" --repo "${{ github.server_url }}/${{ github.repository }}"
       env:
         GH_TOKEN: ${{ secrets.TOKEN }}
-
     
     # - name: Create tag
     #   run: |
