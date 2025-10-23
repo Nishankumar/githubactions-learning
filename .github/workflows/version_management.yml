@@ -46,18 +46,19 @@ jobs:
         chmod +x version_tag.sh
         NEW_VERSION=$(./version_tag.sh "${{ steps.current_version.outputs.version }}" "${{ github.event.inputs.version_type || 'patch' }}")
 
-        echo "$NEW_VERSION"
-        # Safe multiline output
-        {
-          echo "version<<EOF"
-          echo "$NEW_VERSION"
-          echo "EOF"
-        } >> "$GITHUB_OUTPUT"
+        echo "NewVersion is: $NEW_VERSION"
+        echo "appversion=$NEW_VERSION" >> $GITHUB_OUTPUT
+        # # Safe multiline output
+        # {
+        #   echo "version<<EOF"
+        #   echo "$NEW_VERSION"
+        #   echo "EOF"
+        # } >> "$GITHUB_OUTPUT"
 
         
     - name: Update GitHub variable
       run: |
-        gh variable set APP_VERSION --body "${{ steps.newversion.outputs.version }}" --repo "${{ github.repository }}"
+        gh variable set APP_VERSION --body "${{ steps.newversion.outputs.appversion }}" --repo "${{ github.repository }}"
         # gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}" --repo https://github.com/TraneTechnologies/emb-order-placement.git
       env:
         GH_TOKEN: ${{ secrets.TOKEN }}
