@@ -15,12 +15,15 @@ on:
         - minor
         - major
 
+
+permissions:
+  contents: write
+  actions: write
+  
 jobs:
   version:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: write
+
     
     steps:
     - uses: actions/checkout@v4
