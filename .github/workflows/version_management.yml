@@ -65,5 +65,5 @@ jobs:
     
     - name: Create tag
       run: |
-        git tag ${{ steps.new_version.outputs.version }}
-        git push origin ${{ steps.new_version.outputs.version }}
+        git tag ${{ steps.newversion.outputs.appversion }}
+        git push origin ${{ steps.newversion.outputs.appversion }}
