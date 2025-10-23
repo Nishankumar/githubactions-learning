@@ -37,6 +37,8 @@ jobs:
     - name: Calculate new version
       id: new_version
       run: |
+        ls
+        
         chmod +x workflow/version_tag.sh
         NEW_VERSION=$(./workflow/version_tag.sh "${{ steps.current_version.outputs.version }}" "${{ github.event.inputs.version_type || 'patch' }}")
         echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
