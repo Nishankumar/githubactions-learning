@@ -42,7 +42,8 @@ jobs:
       run: |
         chmod +x version_tag.sh
         NEW_VERSION=$(./version_tag.sh "${{ steps.current_version.outputs.version }}" "${{ github.event.inputs.version_type || 'patch' }}")
-    
+
+        echo "$NEW_VERSION"
         # Safe multiline output
         {
           echo "version<<EOF"
