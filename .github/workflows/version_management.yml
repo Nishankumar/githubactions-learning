@@ -57,7 +57,8 @@ jobs:
         
     - name: Update GitHub variable
       run: |
-        gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}" --repo "${{ github.repository }}"
+        gh variable set APP_VERSION --body "${{ steps.newversion.outputs.version }}" --repo "${{ github.repository }}"
+        # gh variable set APP_VERSION --body "${{ steps.new_version.outputs.version }}" --repo https://github.com/TraneTechnologies/emb-order-placement.git
       env:
         GH_TOKEN: ${{ secrets.TOKEN }}
     
