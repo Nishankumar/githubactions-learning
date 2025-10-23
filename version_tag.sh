@@ -5,7 +5,7 @@ version_type=${2:-"major"}
 
 # Extract version numbers
 version_number=${current_version#v}
-echo $version_number
+# echo $version_number
 IFS='.' read -r major minor patch <<< "$version_number"
 
 # Bump version based on type
