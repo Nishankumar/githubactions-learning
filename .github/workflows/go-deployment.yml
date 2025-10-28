@@ -34,8 +34,8 @@ jobs:
       - name: Configure AWS Credentials (using OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::<account-id>:role/GitHubActionsRole
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::612013842013:role/githubactions-role
+          aws-region: us-east-1
 
       - name: Check if Lambda function exists
         id: check
