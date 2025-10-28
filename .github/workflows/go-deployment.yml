@@ -11,7 +11,7 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  FUNCTION_NAME: go-lambda-demo
+  FUNCTION_NAME: go-function
 
 jobs:
   build-and-deploy:
