@@ -1,0 +1,81 @@
+name: Build and Deploy Go Lambda
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-south-1
+  FUNCTION_NAME: go-lambda-demo
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build Go Lambda binary
+        run: |
+          mkdir -p build
+          GOOS=linux GOARCH=amd64 go build -o build/bootstrap main.go
+          pwd
+          ls
+          cd build && zip function.zip bootstrap && cd ..
+
+      - name: Configure AWS Credentials (using OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::612013842013:role/githubactions-role
+          aws-region: us-east-1
+
+      - name: Check if Lambda function exists
+        id: check
+        continue-on-error: true
+        run: |
+          aws lambda get-function --function-name $FUNCTION_NAME
+
+      - name: Create Lambda Function (if not exists)
+        if: steps.check.outcome == 'failure'
+        run: |
+          aws lambda create-function \
+            --function-name $FUNCTION_NAME \
+            --handler bootstrap \
+            --zip-file fileb://build/function.zip \
+            --runtime provided.al2 \
+            --role arn:aws:iam::612013842013:role/LambdaExecutionRole
+
+      - name: Update Lambda Function Code
+        if: steps.check.outcome == 'success'
+        run: |
+          VERSION=$(aws lambda update-function-code \
+            --function-name $FUNCTION_NAME \
+            --zip-file fileb://build/function.zip \
+            --publish \
+            --query 'Version' \
+            --output text)
+
+          echo "Deployed version: $VERSION"
+
+          # Create a new alias for each version
+          ALIAS_NAME="v${VERSION}"
+          aws lambda create-alias \
+            --function-name $FUNCTION_NAME \
+            --name $ALIAS_NAME \
+            --function-version $VERSION || \
+          aws lambda update-alias \
+            --function-name $FUNCTION_NAME \
+            --name $ALIAS_NAME \
+            --function-version $VERSION
+
+          echo "✅ Deployed alias: $ALIAS_NAME"
