@@ -1,7 +1,7 @@
-module github.com/Nishankumar/githubactions-learning
+module app01
 
-go 1.22
+go 1.24
 
-require (
-    github.com/aws/aws-lambda-go v1.41.0
-)
+require github.com/aws/aws-lambda-go v1.47.0
+
+require github.com/lib/pq v1.10.9
