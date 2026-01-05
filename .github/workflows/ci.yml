@@ -27,8 +27,8 @@ jobs:
   lint:
     needs: detect-changes
     runs-on: ubuntu-latest
-    max-parallel: 1
     strategy:
+      max-parallel: 1
       matrix:
         lambda: [app01, app02]
 
@@ -57,8 +57,8 @@ jobs:
   test:
     needs: detect-changes
     runs-on: ubuntu-latest
-    max-parallel: 1
     strategy:
+      max-parallel: 1
       matrix:
         lambda: [app01, app02]
 
@@ -98,8 +98,8 @@ jobs:
   build-and-package:
     needs: detect-changes
     if: contains(fromJSON('["sandbox","development","staging","main"]'), github.base_ref)
-    max-parallel: 1
     strategy:
+      max-parallel: 1
       matrix:
         lambda: [app01, app02]
 
