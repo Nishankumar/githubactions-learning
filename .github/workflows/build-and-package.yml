@@ -46,7 +46,9 @@ jobs:
         run: go mod tidy
 
       - name: Ensure environment folder exists
-        run: mkdir -p environments/${{ inputs.environment }}
+        run: |
+          mkdir -p environments/${{ inputs.environment }}
+          ls environments
 
       - name: Build or generate dummy zip
         shell: bash
@@ -72,7 +74,8 @@ jobs:
             # zip -X -r "../environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip" bootstrap
             zip -X -r "${{ inputs.lambda_name }}.zip" bootstrap
 
-            cp "${{ inputs.lambda_name }}.zip" "../$ZIP_PATH"
+            ls 
+            cp "${{ inputs.lambda_name }}.zip" "$ZIP_PATH"
             
             pwd
             ls
