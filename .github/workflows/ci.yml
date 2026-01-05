@@ -1,61 +1,90 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Demo
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: ["sandbox", "development", "staging", "main"]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  detect-changes:
     runs-on: ubuntu-latest
-    environment:
-      name: dev
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    outputs:
+      app01: ${{ steps.filter.outputs.app01 }}
+      app02: ${{ steps.filter.outputs.app02 }}
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Detect Lambda changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app01:
+              - 'lambdas/app01/**'
+            app02:
+              - 'lambdas/app02/**'
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        if: github.event_name == 'pull_request'
+  lint:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lambda: [app01, app02]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Download Go dependencies
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
+        run: go mod tidy
+        working-directory: ./lambdas/${{ matrix.lambda }}
+
+      - name: Run Go Lint
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          go install golang.org/x/lint/golint@latest
+          golint ./...
+        working-directory: ./lambdas/${{ matrix.lambda }}
 
-      - name: Set APP_VERSION
-        run: echo "APP_VERSION=${{ github.run_number }}" >> $GITHUB_ENV
+  test:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lambda: [app01, app02]
 
-      - name: Use APP_VERSION
-        run: echo "Deploying version $APP_VERSION"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+      - name: Set up Go
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
+        uses: actions/setup-go@v5
         with:
-          github_token: ${{ secrets.TOKEN }}
-          release_branches: main
-          # custom_tag: v2.0.0
-          # default_bump: major
+          go-version: '1.24'
 
-          
-      - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
+      - name: Run Go tests
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
+        run: go test ./... -v
+        working-directory: ./lambdas/${{ matrix.lambda }}
+
+  build-and-package:
+    needs: detect-changes
+    if: contains(fromJSON('["sandbox","development","staging","main"]'), github.base_ref)
+    strategy:
+      matrix:
+        lambda: [app01, app02]
+
+    uses: ./.github/workflows/build-and-package.yml
+    with:
+      environment: ${{ github.base_ref }}
+      lambda_name: ${{ matrix.lambda }}
+      changed: ${{ needs.detect-changes.outputs[matrix.lambda] == 'true' }}
+    secrets: inherit
