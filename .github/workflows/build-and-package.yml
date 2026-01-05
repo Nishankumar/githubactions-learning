@@ -53,7 +53,7 @@ jobs:
       - name: Build or generate dummy zip
         shell: bash
         run: |
-          ZIP_PATH="environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip"
+          ZIP_PATH="environments/${{ inputs.environment }}"
           MODULE_DIR="lambdas/${{ inputs.lambda_name }}"
 
           if [ "${{ inputs.changed }}" = "true" ]; then
