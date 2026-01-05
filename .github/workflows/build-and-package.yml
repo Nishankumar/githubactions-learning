@@ -70,9 +70,13 @@ jobs:
 
             mkdir -p "environments/${{ inputs.environment }}"
             zip -X -r "environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip" bootstrap
-
+            
+            pwd
+            ls
             rm -f bootstrap
+            ls
             cd -
+            pwd
           else
             echo "ℹ️ No changes detected → creating deterministic dummy zip"
 
