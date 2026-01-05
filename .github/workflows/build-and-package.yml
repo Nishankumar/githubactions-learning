@@ -35,6 +35,14 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        working-directory: ./lambdas/${{ matrix.lambda }}
+        run: go mod download
+
+      - name: Ensure dependencies are downloaded
+        working-directory: ./lambdas/${{ matrix.lambda }}
+        run: go mod tidy
             
       - name: Ensure environment folder exists
         run: mkdir -p environments/${{ inputs.environment }}
