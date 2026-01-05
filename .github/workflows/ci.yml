@@ -4,9 +4,6 @@ on:
   pull_request:
     branches: ["sandbox", "development", "staging", "main"]
 
-env:
-  LAMBDAS: app01 app02
-
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
@@ -24,7 +21,7 @@ jobs:
           filters: |
             app01:
               - 'lambdas/app01/**'
-            app01:
+            app02:
               - 'lambdas/app02/**'
 
   lint:
@@ -33,23 +30,24 @@ jobs:
     strategy:
       matrix:
         lambda: [app01, app02]
-    if: |
-      (matrix.lambda == 'app01' && needs.detect-changes.outputs.app01 == 'true') ||
-      (matrix.lambda == 'app02' && needs.detect-changes.outputs.app02 == 'true') 
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Go
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
 
       - name: Download Go dependencies
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
         run: go mod tidy
         working-directory: ./lambdas/${{ matrix.lambda }}
 
       - name: Run Go Lint
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
         run: |
           go install golang.org/x/lint/golint@latest
           golint ./...
@@ -61,19 +59,19 @@ jobs:
     strategy:
       matrix:
         lambda: [app01, app02]
-    if: |
-      (matrix.lambda == 'app01' && needs.detect-changes.outputs.app01 == 'true') ||
-      (matrix.lambda == 'app02' && needs.detect-changes.outputs.app02 == 'true')
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Go
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
 
       - name: Run Go tests
+        if: needs.detect-changes.outputs[matrix.lambda] == 'true'
         run: go test ./... -v
         working-directory: ./lambdas/${{ matrix.lambda }}
 
@@ -83,19 +81,10 @@ jobs:
     strategy:
       matrix:
         lambda: [app01, app02]
+
     uses: ./.github/workflows/build-and-package.yml
     with:
       environment: ${{ github.base_ref }}
       lambda_name: ${{ matrix.lambda }}
-      changed: |
-        ${{ (matrix.lambda == 'app01' && needs.detect-changes.outputs.app01 == 'true') ||
-            (matrix.lambda == 'app02' && needs.detect-changes.outputs.app02 == 'true') }}
+      changed: ${{ needs.detect-changes.outputs[matrix.lambda] == 'true' }}
     secrets: inherit
-
-  # terraform-plan:
-  #   needs: build-and-package
-  #   uses: ./.github/workflows/terraform-plan.yml
-  #   secrets: inherit
-  #   with:
-  #     environment: ${{ github.base_ref }}
-  #     pr_decoration: true
