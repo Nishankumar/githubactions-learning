@@ -34,7 +34,7 @@ jobs:
           ZIP_PATH=environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip
           if [ "${{ inputs.changed }}" == "true" ]; then
             echo "Changes detected → building ${{ inputs.lambda_name }}"
-            cd lambdas/${{ inputs.lambda_name }}
+            cd lambdas/${{ inputs.lambda_name }}/src/cmd
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -trimpath -ldflags "-s -w" -buildvcs=false -o bootstrap
             zip -r -X ../../$ZIP_PATH bootstrap
             cd -
