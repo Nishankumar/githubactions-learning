@@ -42,7 +42,7 @@ jobs:
         run: go mod download
 
       - name: Ensure dependencies are downloaded
-        working-directory: ./lambdas/${{ matrix.lambda_name }}
+        working-directory: ./lambdas/${{ inputs.lambda_name }}
         run: go mod tidy
 
       - name: Ensure environment folder exists
