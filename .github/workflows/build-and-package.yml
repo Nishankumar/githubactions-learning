@@ -68,8 +68,8 @@ jobs:
               -o bootstrap \
               ./src/cmd
 
-            mkdir -p "environments/${{ inputs.environment }}"
-            zip -X -r "environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip" bootstrap
+            # mkdir -p "environments/${{ inputs.environment }}"
+            zip -X -r "../environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip" bootstrap
             
             pwd
             ls
