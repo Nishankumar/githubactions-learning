@@ -44,7 +44,7 @@ jobs:
 
       - name: Download Go dependencies
         if: needs.detect-changes.outputs[matrix.lambda] == 'true'
-        run: go mod tidy
+        run: go mod download
         working-directory: ./lambdas/${{ matrix.lambda }}
 
       - name: Run Go Lint

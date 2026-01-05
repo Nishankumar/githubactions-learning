@@ -32,53 +32,32 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles(format('lambdas/{0}/go.sum', inputs.lambda_name)) }}
           restore-keys: |
             ${{ runner.os }}-go-
 
       - name: Download dependencies
-        working-directory: ./lambdas/${{ inputs.lambda_name }}
+        working-directory: lambdas/${{ inputs.lambda_name }}
         run: go mod download
 
-      - name: Ensure dependencies are downloaded
-        working-directory: ./lambdas/${{ inputs.lambda_name }}
-        run: go mod tidy
-            
       - name: Ensure environment folder exists
         run: mkdir -p environments/${{ inputs.environment }}
 
       - name: Build or generate dummy zip
+        shell: bash
         run: |
-          # ZIP_PATH=environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip
-          # if [ "${{ inputs.changed }}" == "true" ]; then
-          #   echo "Changes detected → building ${{ inputs.lambda_name }}"
-          #   cd lambdas/${{ inputs.lambda_name }}/src/cmd
-          #   CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -trimpath -ldflags "-s -w" -buildvcs=false -o bootstrap
-          #   zip -r -X $ZIP_PATH bootstrap
-          #   cd -
-          # # else
-          # #   echo "No changes detected → creating deterministic dummy zip for ${{ inputs.lambda_name }}"
-          # #   echo "dummy" > dummy.txt
-          # #   zip -r -X $ZIP_PATH dummy.txt
-          # #   rm dummy.txt
-          # # fi
-          # else
-          #   echo "No changes detected → creating deterministic dummy zip for ${{ inputs.lambda_name }}"
-          #   # Create an empty bootstrap file inside zip
-          #   mkdir -p dummy-lambda
-          #   touch dummy-lambda/bootstrap
-          #   zip -r -X $ZIP_PATH dummy-lambda/*
-          #   rm -rf dummy-lambda
-          # fi         
+          set -euo pipefail
 
-          ZIP_PATH=environments/main/${{ inputs.lambda_name }}.zip
+          ZIP_PATH="environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip"
+          LAMBDA_DIR="lambdas/${{ inputs.lambda_name }}/src/cmd"
 
-          ls
+          echo "ZIP_PATH=$ZIP_PATH"
+          echo "Changed = ${{ inputs.changed }}"
 
-          if [ "${{ inputs.changed }}" == "true" ]; then
-            echo "Changes detected → building ${{ inputs.lambda_name }}"
+          if [ "${{ inputs.changed }}" = "true" ]; then
+            echo "✅ Changes detected → building ${{ inputs.lambda_name }}"
 
-            cd lambdas/${{ inputs.lambda_name }}/src/cmd
+            cd "$LAMBDA_DIR"
 
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
               -tags lambda.norpc \
@@ -87,15 +66,19 @@ jobs:
               -buildvcs=false \
               -o bootstrap
 
-            zip -r -X ../../../$ZIP_PATH bootstrap
+            mkdir -p "../../../environments/${{ inputs.environment }}"
+            zip -X -r "../../../$ZIP_PATH" bootstrap
+
             cd -
           else
-            echo "No changes detected → creating deterministic dummy zip"
+            echo "ℹ️ No changes detected → creating deterministic dummy zip"
 
-            mkdir -p dummy-lambda
-            touch dummy-lambda/bootstrap
-            zip -r -X $ZIP_PATH dummy-lambda/*
-            rm -rf dummy-lambda
+            TMP_DIR="$(mktemp -d)"
+            mkdir -p "$TMP_DIR/bootstrap"
+            touch "$TMP_DIR/bootstrap/bootstrap"
+
+            zip -X -r "$ZIP_PATH" -j "$TMP_DIR/bootstrap/bootstrap"
+            rm -rf "$TMP_DIR"
           fi
 
       - name: Upload Lambda artifact
