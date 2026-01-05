@@ -46,40 +46,38 @@ jobs:
       - name: Build or generate dummy zip
         shell: bash
         run: |
-          set -euo pipefail
-
           ZIP_PATH="environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip"
-          LAMBDA_DIR="lambdas/${{ inputs.lambda_name }}/src/cmd"
-
-          echo "ZIP_PATH=$ZIP_PATH"
-          echo "Changed = ${{ inputs.changed }}"
+          MODULE_DIR="lambdas/${{ inputs.lambda_name }}"
 
           if [ "${{ inputs.changed }}" = "true" ]; then
             echo "✅ Changes detected → building ${{ inputs.lambda_name }}"
 
-            cd "$LAMBDA_DIR"
+            cd "$MODULE_DIR"
 
+            # Build from module root
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
               -tags lambda.norpc \
               -trimpath \
               -ldflags "-s -w" \
               -buildvcs=false \
-              -o bootstrap
+              -o bootstrap \
+              ./src/cmd
 
-            mkdir -p "../../../environments/${{ inputs.environment }}"
-            zip -X -r "../../../$ZIP_PATH" bootstrap
+            mkdir -p "environments/${{ inputs.environment }}"
+            zip -X -r "environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip" bootstrap
 
+            rm -f bootstrap
             cd -
           else
             echo "ℹ️ No changes detected → creating deterministic dummy zip"
 
-            TMP_DIR="$(mktemp -d)"
-            mkdir -p "$TMP_DIR/bootstrap"
-            touch "$TMP_DIR/bootstrap/bootstrap"
-
-            zip -X -r "$ZIP_PATH" -j "$TMP_DIR/bootstrap/bootstrap"
-            rm -rf "$TMP_DIR"
+            mkdir -p "environments/${{ inputs.environment }}"
+            mkdir -p dummy-lambda
+            touch dummy-lambda/bootstrap
+            zip -X -r "$ZIP_PATH" dummy-lambda/bootstrap
+            rm -rf dummy-lambda
           fi
+
 
       - name: Upload Lambda artifact
         uses: actions/upload-artifact@v4
