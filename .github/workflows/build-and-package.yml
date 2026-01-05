@@ -73,6 +73,8 @@ jobs:
 
           ZIP_PATH=environments/main/${{ inputs.lambda_name }}.zip
 
+          ls
+          
           if [ "${{ inputs.changed }}" == "true" ]; then
             echo "Changes detected → building ${{ inputs.lambda_name }}"
 
