@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           ZIP_PATH="environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip"
-          MODULE_DIR="lambdas/${{ inputs.lambda_name }}"
+          MODULE_DIR="lambdas/${{ inputs.lambda_name }}/src/cmd"
 
           if [ "${{ inputs.changed }}" = "true" ]; then
             echo "✅ Changes detected → building ${{ inputs.lambda_name }}"
@@ -60,8 +60,7 @@ jobs:
               -trimpath \
               -ldflags "-s -w" \
               -buildvcs=false \
-              -o bootstrap \
-              ./src/cmd
+              -o bootstrap 
 
             mkdir -p "environments/${{ inputs.environment }}"
             zip -X -r "environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip" bootstrap
