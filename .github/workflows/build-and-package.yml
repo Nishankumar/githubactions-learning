@@ -75,7 +75,7 @@ jobs:
             zip -X -r "${{ inputs.lambda_name }}.zip" bootstrap
 
             ls 
-            cp "${{ inputs.lambda_name }}.zip" "../$ZIP_PATH"
+            cp "${{ inputs.lambda_name }}.zip" "../../$ZIP_PATH"
             
             pwd
             ls
