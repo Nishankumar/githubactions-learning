@@ -54,7 +54,7 @@ jobs:
             echo "Changes detected → building ${{ inputs.lambda_name }}"
             cd lambdas/${{ inputs.lambda_name }}/src/cmd
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -trimpath -ldflags "-s -w" -buildvcs=false -o bootstrap
-            zip -r -X ../../$ZIP_PATH bootstrap
+            zip -r -X $ZIP_PATH bootstrap
             cd -
           # else
           #   echo "No changes detected → creating deterministic dummy zip for ${{ inputs.lambda_name }}"
