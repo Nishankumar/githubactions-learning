@@ -40,6 +40,10 @@ jobs:
         working-directory: lambdas/${{ inputs.lambda_name }}
         run: go mod download
 
+      - name: Ensure dependencies are downloaded
+        working-directory: ./lambdas/${{ matrix.lambda }}
+        run: go mod tidy
+
       - name: Ensure environment folder exists
         run: mkdir -p environments/${{ inputs.environment }}
 
@@ -47,7 +51,7 @@ jobs:
         shell: bash
         run: |
           ZIP_PATH="environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip"
-          MODULE_DIR="lambdas/${{ inputs.lambda_name }}/src/cmd"
+          MODULE_DIR="lambdas/${{ inputs.lambda_name }}"
 
           if [ "${{ inputs.changed }}" = "true" ]; then
             echo "✅ Changes detected → building ${{ inputs.lambda_name }}"
@@ -60,7 +64,8 @@ jobs:
               -trimpath \
               -ldflags "-s -w" \
               -buildvcs=false \
-              -o bootstrap 
+              -o bootstrap \
+              ./src/cmd
 
             mkdir -p "environments/${{ inputs.environment }}"
             zip -X -r "environments/${{ inputs.environment }}/${{ inputs.lambda_name }}.zip" bootstrap
