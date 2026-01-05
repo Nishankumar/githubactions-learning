@@ -16,7 +16,7 @@ type Response struct {
 }
 
 func handler(ctx context.Context, req Request) (Response, error) {
-	message := fmt.Sprintf("Hello App02, %s! This is a Go Lambda deployed via GitHub Actions 🚀", req.Name)
+	message := fmt.Sprintf("Hello App01, %s! This is a Go Lambda deployed via GitHub Actions 🚀", req.Name)
 	return Response{Message: message}, nil
 }
 

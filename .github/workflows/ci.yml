@@ -70,6 +70,25 @@ jobs:
         with:
           go-version: '1.24'
 
+      - name: Cache Go modules
+        working-directory: ./lambdas/${{ matrix.lambda }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        working-directory: ./lambdas/${{ matrix.lambda }}
+        run: go mod download
+
+      - name: Ensure dependencies are downloaded
+        working-directory: ./lambdas/${{ matrix.lambda }}
+        run: go mod tidy
+
       - name: Run Go tests
         if: needs.detect-changes.outputs[matrix.lambda] == 'true'
         run: go test ./... -v
